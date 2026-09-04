@@ -68,6 +68,28 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(state).encode("utf-8"))
+        elif path == "/update" or path == "/updateTelemetry":
+            # Endpoint for ESP32 hardware to push real sensor readings to cloud (GET or POST)
+            query = urllib.parse.parse_qs(parsed_url.query)
+            if "voltage" in query: state["voltage"] = float(query["voltage"][0])
+            if "current" in query: state["current"] = float(query["current"][0])
+            if "power" in query: state["power"] = float(query["power"][0])
+            if "energy" in query: state["energy"] = float(query["energy"][0])
+            if "relayState" in query: state["relayState"] = (int(query["relayState"][0]) == 1)
+            if "faultDetected" in query: state["faultDetected"] = (int(query["faultDetected"][0]) == 1)
+            if "theftDetected" in query: state["theftDetected"] = (int(query["theftDetected"][0]) == 1)
+            response = {
+                "success": True,
+                "balance": state["balance"],
+                "relayState": state["relayState"],
+                "costPerKWh": state["costPerKWh"],
+                "overVoltage": state["overVoltage"],
+                "overCurrent": state["overCurrent"]
+            }
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(response).encode("utf-8"))
         elif path in ["/", "/index.html"]:
             if os.path.exists(INDEX_FILE):
                 self.send_response(200)
