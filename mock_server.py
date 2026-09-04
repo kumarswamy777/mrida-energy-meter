@@ -3,7 +3,6 @@ import socketserver
 import json
 import urllib.parse
 import time
-import random
 import os
 import sys
 
@@ -17,7 +16,9 @@ state = {
     "power": 287.75,
     "energy": 1.450,
     "balance": 250.00,
+    "pendingRecharge": 0.0,
     "relayState": True,
+    "relayCommand": None,
     "faultDetected": False,
     "theftDetected": False,
     "overVoltage": 260.0,
@@ -56,15 +57,43 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         if "theftDetected" in query:
             state["theftDetected"] = (int(query["theftDetected"][0]) == 1)
 
-        # Return latest cloud balance and target relayState back to ESP32
-        return {
+        # Sync live balance from ESP32
+        if "balance" in query:
+            try:
+                esp_bal = float(query["balance"][0])
+                if state.get("pendingRecharge", 0.0) <= 0:
+                    state["balance"] = round(esp_bal, 2)
+            except: pass
+
+        # Sync live relay state from ESP32 if no pending cloud command
+        if "relayState" in query:
+            try:
+                esp_relay = (int(query["relayState"][0]) == 1)
+                if state.get("relayCommand") is None:
+                    state["relayState"] = esp_relay
+            except: pass
+
+        recharge_to_send = state.get("pendingRecharge", 0.0)
+        cmd_to_send = state.get("relayCommand", -1)
+        if cmd_to_send is None:
+            cmd_to_send = -1
+
+        resp = {
             "success": True,
             "balance": round(state["balance"], 2),
+            "pendingRecharge": round(recharge_to_send, 2),
+            "relayCommand": cmd_to_send,
             "relayState": state["relayState"],
             "costPerKWh": state["costPerKWh"],
             "overVoltage": state["overVoltage"],
             "overCurrent": state["overCurrent"]
         }
+
+        # Clear dispatched pending actions so ESP32 executes them once
+        state["pendingRecharge"] = 0.0
+        state["relayCommand"] = None
+
+        return resp
 
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
@@ -117,14 +146,17 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         if path == "/recharge":
             amount = float(query.get("amount", [100])[0])
             state["balance"] = round(state["balance"] + amount, 2)
+            state["pendingRecharge"] = round(state.get("pendingRecharge", 0.0) + amount, 2)
             if state["balance"] > state["minBalance"]:
                 state["relayState"] = True
+                state["relayCommand"] = 1
             response = {"success": True, "balance": state["balance"], "message": f"Recharge of Rs. {amount:.2f} processed"}
         elif path in ["/update", "/updateTelemetry"]:
             response = self.handle_telemetry_update(query)
         elif path == "/setRelay":
             relay_val = int(query.get("state", [1])[0])
             state["relayState"] = (relay_val == 1)
+            state["relayCommand"] = 1 if (relay_val == 1) else 0
             response = {"success": True, "relayState": state["relayState"]}
         elif path == "/setThresholds":
             if "overVoltage" in query: state["overVoltage"] = float(query["overVoltage"][0])
@@ -142,6 +174,8 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             state["minBalance"] = 0.0
             state["costPerKWh"] = 0.20
             state["relayState"] = False
+            state["relayCommand"] = 0
+            state["pendingRecharge"] = 0.0
             response = {"success": True, "message": "Factory reset complete"}
         else:
             response = {"success": False, "message": f"Endpoint {path} not found"}
