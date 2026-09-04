@@ -1,0 +1,1612 @@
+#ifndef WEB_DASHBOARD_H
+#define WEB_DASHBOARD_H
+
+#include <Arduino.h>
+
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRIDA ENERGY SOLUTIONS - Smart Prepaid Meter</title>
+    <!-- Embedded SVG Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAA/1BMVEUbV2MTkJtmnhocZ5sNn9tVXFdb0WyZ2CYW0fMipmksVx8ZMh+c4Vhb1I8FccxLaRlXolVfnpla2O8cy6CIiIjS8TltySaZ6Yvb+E/n5+fN9Jg1xmeOrC0JHlM0mDEAM45Ap8EAAAARFhMBOI0BKG8GGCoDqKwENHQNJjGoqKgBGUyXl5fHx8c0NjQGV68KtqgGKE94eHj4+PfV1dQFQ5MHdowIuO4vx463t7coJygKaIwDmrMLOUsCSaMSuZlpxiwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVTTVyAAAAQHRSTlP/////////////////////////////////////////////////////////////////////////////////////73leyQAABbJJREFUeNrtmWlzokwQgIcZkMtEjVfMsfsygCAqgmK89f//q+0evLPJGsGq94NdFau4+pk+pqdnQqwbC7kD7oD/AcA3iOLzmwH65WbloSKFhN8GQJ6fXx5eKvIj+4qQDbCs1J9fXpqy/BgmXxAyAVxWBP0vTxoA7ITkDyChUi9KkowWeN7fTcgEmIe2AgBJegSArRh5AzhLbJuUy4yxle3ZpJQ3wGW259ng/GKxTJzf5AYWOCCeQ94opSQKzBwAp3EkTgDiEIriBn5mQKlYbCpH15GHAM8p0RI13qPMWWQ0i83myzHBiVwzcAKX0pIfRJnnQfmh8NBsNvsHi8pgQhQEPqXRF/p/CAApNMu7a/OZWhjkd0I9J8qh2BEBKOwApXod8iZKwhUjdpRHueaT6mTyWtDTK/pcV9MFIVr6OS04plQFEfPJVJ/r9VLuKxonuo5fmG+gXlX5jZbMfrlYLIL+0k3WZE5QfbGoqvQWi75PMI9Qf4Py/AEY5AkAgLBpmLm3LUSSB4P1ZIKATcPIuy8C9e12ezCYCBM21MoXYMLCu1ggIDVhY+QEqCxF5kgaqEeAMCFHQEWT8B1NWyz2gDX6aGPmAlCeNM3lFW3Qbi8W0hhkkfqoseF5APpP2seH9FAdDNrQmozn8/F83BaAy2P8LQD1PxTB4zpUoKXPORnPJTQhJ0DlCfRDydmUjZ3HyVxCE15zAcwgANLbGzWMw2JCxuijaqGRB6CifcgudtCE7AlLALTX68JlhfR7wAwchA8rEmHkMN/GmKkF1cgOAAOYCIR0tLdYSmMJCAXVzA6AFHJxJsgyOS5ICFhvcgDA7J1DjTjVDwAdAaqafZcJ1ccVmUpOS6qkt9u6SrMDZG2MU/ljfIoFgN7+SRJ9BeDyx3JX604AMKnL6g+S6CuAqcmwAD99nHZU/gABjcv6le8BBENMtLOnJgLKm08h4FcA0EP/yed3qymgdNbI+NcAfIufG2BJVfAQbZzOgqOJ/gPAEpKU4Ew7kcFa1w164iGTJd+1vl8CfASce8ivSq+G2Th4iBMWOi65Lk1da8w+hUDXubHNId4njIV2YDH3qonGfGu+PH93/foLtjkVlkq4+u2AfnZlLSLW/Ny3kv5qmpTAycRjuLJt2CP/xY+XAnxmkTPbOYTYMjbUZWGYoP4APpeDa8v12IrOAMb61bAohNgH/R4OH/QnV68HZvtTCKplizdUCC6OH0dO5DC6fk0m2vi0BOhggFGooPs94RgCx1BuhrYFO0Zi7iFcL2Bi/rbtdM/K4RBnZWdqvICgQdeLPd18ziSZQfKsknT01js6ahVlArg+kTXo7mSUR8jNcJVsI89JAllqJxmbXwjzci5t9bO5FxjGrkQ47+KoKCNgW2a4C2KBcpNu1cMk2E60jPuDiO1nM/9lWiUD95lwQGcniedGjpN9h+M/7gqG+cviFLRjlq5WGGnXDvLYozE4NV4uTZ8QT8wwGDyMXtiUuLlsAl0SigSyU0m8yOVCLC8XAEw07kdeKlGq3BW/n4pVpn0yP5P7v1huB5hNj85FO1346fa20p2JezFuoKfbe7VDsRUv/xvQHw73hM6wB79xZyvDFmproR5lmN6aHt7uDIfxZYDe7pvucDQ9MU48GKWA3binw9QGZajEw9lFgFk3fTEe9ru9k2cjHOKoJtTtXdOqpc+m6d8FgL41HXExJKszPZ4CQISrngC09oD0nbg1Sz/5N6AFWiiFBg4axC5+rPRGKL2eMGALGB0AHRxDK8ZSe2bx3wEjAHD8fwBGoSOG2AepteJU5zQ+BYwUkWkWh56Yj+J/p+kIA2CmZwU1BHRTJ8ej/hFgN1Te7XEclQINEzUAPLsMIJaWHWCb37EY6w4QC6lNp2jwtAaLHQhPHfY9oHs0BkUo20VOEY9ivOx3U6kpXDzg20yAz/v3YncH3AF3wM8BfwBzeYSMPJUqfQAAAABJRU5ErkJggg==">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --primary-border: #334155;
+            --brand-green: #10b981;
+            --brand-cyan: #06b6d4;
+            --brand-blue: #3b82f6;
+            --brand-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+            --brand-gradient-subtle: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%);
+            --accent: #10b981;
+            --secondary: #0284c7;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border-subtle: #e2e8f0;
+            --border-card: rgba(226, 232, 240, 0.8);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Loading Animation / Preloader */
+        #app-preloader {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #app-preloader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-brand-wrapper {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #10b981;
+            border-right-color: #06b6d4;
+            animation: spinRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .loader-ring-outer {
+            position: absolute;
+            width: 124%;
+            height: 124%;
+            border-radius: 50%;
+            border: 2px dashed rgba(6, 182, 212, 0.35);
+            animation: spinRingReverse 6s linear infinite;
+        }
+
+        .loader-logo-svg, .loader-logo-img {
+            width: 58px;
+            height: 58px;
+            filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.6));
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .loader-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .loader-subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .loader-bar-container {
+            width: 180px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-bar-fill {
+            position: absolute;
+            top: 0;
+            left: -50%;
+            height: 100%;
+            width: 50%;
+            background: var(--brand-gradient);
+            border-radius: 10px;
+            animation: moveProgress 1.4s ease-in-out infinite;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spinRingReverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.5)); }
+            50% { transform: scale(1.06); filter: drop-shadow(0 0 22px rgba(6, 182, 212, 0.85)); }
+        }
+
+        @keyframes moveProgress {
+            0% { left: -50%; width: 30%; }
+            50% { left: 30%; width: 50%; }
+            100% { left: 100%; width: 30%; }
+        }
+
+        /* Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            width: 260px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            padding: 24px 20px;
+            gap: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+            flex-shrink: 0;
+        }
+
+        .brand-logo svg, .brand-logo img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .brand-name {
+            font-size: 13.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.25;
+            text-transform: uppercase;
+        }
+
+        .brand-tagline {
+            font-size: 11px;
+            font-weight: 500;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 14px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            gap: 12px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+
+        .nav-link.active {
+            background: var(--brand-gradient);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+        }
+
+        .sidebar-footer {
+            padding: 18px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.15);
+            font-size: 12px;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            width: fit-content;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .sidebar-badge .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        /* Main Content */
+        .main-content {
+            grid-column: 2;
+            padding: 28px 36px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Top Header Bar */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .pulse-beacon {
+            position: relative;
+            width: 10px;
+            height: 10px;
+        }
+
+        .pulse-beacon .core {
+            width: 10px;
+            height: 10px;
+            background-color: var(--brand-green);
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .pulse-beacon .ring {
+            width: 22px;
+            height: 22px;
+            background-color: rgba(16, 185, 129, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            animation: pulseWave 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+
+        .pulse-beacon.offline .core { background-color: var(--danger); }
+        .pulse-beacon.offline .ring { background-color: rgba(239, 68, 68, 0.4); }
+
+        @keyframes pulseWave {
+            0% { transform: scale(0.5); opacity: 0.9; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Metric Cards Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-card);
+            box-shadow: var(--card-shadow);
+            padding: 22px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--brand-gradient);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Primary Metric Highlight Cards */
+        .card.card-featured {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card.card-featured::before {
+            opacity: 1;
+        }
+
+        .card.card-featured .card-title {
+            color: #94a3b8;
+        }
+
+        .card.card-featured .dashboard-value {
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .card.card-featured .unit {
+            color: #34d399;
+        }
+
+        .card.card-featured .trend {
+            color: #cbd5e1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            background: var(--brand-gradient-subtle);
+            color: var(--brand-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            transition: var(--transition);
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.08) rotate(5deg);
+        }
+
+        .card-featured .card-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .dashboard-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            margin: 6px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .unit {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .trend {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Status Section */
+        .status-indicators {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            background: var(--bg-body);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition);
+        }
+
+        .status-item:hover {
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 14px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .status-active {
+            background-color: var(--accent);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+        }
+        .status-inactive {
+            background-color: #94a3b8;
+        }
+        .status-warning {
+            background-color: var(--warning);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+        }
+        .status-danger {
+            background-color: var(--danger);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        }
+
+        .status-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            flex-grow: 1;
+        }
+
+        .status-value {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .status-value.tag-on { background: rgba(16, 185, 129, 0.15); color: #047857; }
+        .status-value.tag-off { background: rgba(148, 163, 184, 0.2); color: #475569; }
+        .status-value.tag-normal { background: rgba(16, 185, 129, 0.15); color: #047857; }
+        .status-value.tag-alert { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
+
+        /* Quick Action Presets & Inputs */
+        .recharge-presets {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .preset-chip {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .preset-chip:hover {
+            background: var(--brand-gradient-subtle);
+            border-color: var(--brand-cyan);
+            color: #0284c7;
+            transform: translateY(-1px);
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 16px;
+        }
+
+        .input-group .form-input {
+            flex-grow: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group .input-append {
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-left: none;
+            border-top-right-radius: var(--radius-sm);
+            border-bottom-right-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            transition: var(--transition);
+            background-color: #ffffff;
+            color: var(--text-main);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--brand-cyan);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Buttons & Inline Spinners */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: 12px 22px;
+            font-size: 14px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            gap: 8px;
+            user-select: none;
+            position: relative;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            color: white;
+            background: var(--brand-gradient);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 18px rgba(6, 182, 212, 0.4);
+            filter: brightness(1.05);
+        }
+
+        .btn-success {
+            color: white;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+            filter: brightness(1.05);
+        }
+
+        .btn-danger {
+            color: white;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+            filter: brightness(1.05);
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            filter: grayscale(0.2);
+            pointer-events: none;
+        }
+
+        /* Button Spinner */
+        .btn-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        /* Alerts & Toast System */
+        .alert {
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInDown 0.3s ease;
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            color: #065f46;
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-danger {
+            color: #991b1b;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            color: #92400e;
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+
+        /* Settings and Sections */
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .settings-icon {
+            margin-right: 12px;
+            font-size: 22px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Mobile Responsive */
+        .mobile-header {
+            display: none;
+            background: #0f172a;
+            padding: 14px 20px;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .menu-toggle-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                top: 56px;
+                height: calc(100vh - 56px);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .main-content {
+                grid-column: 1;
+                padding: 20px 16px;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .page-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Loading Splash Screen -->
+    <div id="app-preloader">
+        <div class="loader-brand-wrapper">
+            <div class="loader-ring"></div>
+            <div class="loader-ring-outer"></div>
+            <!-- Mrida Logo in Preloader -->
+            <img class="loader-logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAA/1BMVEUbV2MTkJtmnhocZ5sNn9tVXFdb0WyZ2CYW0fMipmksVx8ZMh+c4Vhb1I8FccxLaRlXolVfnpla2O8cy6CIiIjS8TltySaZ6Yvb+E/n5+fN9Jg1xmeOrC0JHlM0mDEAM45Ap8EAAAARFhMBOI0BKG8GGCoDqKwENHQNJjGoqKgBGUyXl5fHx8c0NjQGV68KtqgGKE94eHj4+PfV1dQFQ5MHdowIuO4vx463t7coJygKaIwDmrMLOUsCSaMSuZlpxiwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVTTVyAAAAQHRSTlP/////////////////////////////////////////////////////////////////////////////////////73leyQAABbJJREFUeNrtmWlzokwQgIcZkMtEjVfMsfsygCAqgmK89f//q+0evLPJGsGq94NdFau4+pk+pqdnQqwbC7kD7oD/AcA3iOLzmwH65WbloSKFhN8GQJ6fXx5eKvIj+4qQDbCs1J9fXpqy/BgmXxAyAVxWBP0vTxoA7ITkDyChUi9KkowWeN7fTcgEmIe2AgBJegSArRh5AzhLbJuUy4yxle3ZpJQ3wGW259ng/GKxTJzf5AYWOCCeQ94opSQKzBwAp3EkTgDiEIriBn5mQKlYbCpH15GHAM8p0RI13qPMWWQ0i83myzHBiVwzcAKX0pIfRJnnQfmh8NBsNvsHi8pgQhQEPqXRF/p/CAApNMu7a/OZWhjkd0I9J8qh2BEBKOwApXod8iZKwhUjdpRHueaT6mTyWtDTK/pcV9MFIVr6OS04plQFEfPJVJ/r9VLuKxonuo5fmG+gXlX5jZbMfrlYLIL+0k3WZE5QfbGoqvQWi75PMI9Qf4Py/AEY5AkAgLBpmLm3LUSSB4P1ZIKATcPIuy8C9e12ezCYCBM21MoXYMLCu1ggIDVhY+QEqCxF5kgaqEeAMCFHQEWT8B1NWyz2gDX6aGPmAlCeNM3lFW3Qbi8W0hhkkfqoseF5APpP2seH9FAdDNrQmozn8/F83BaAy2P8LQD1PxTB4zpUoKXPORnPJTQhJ0DlCfRDydmUjZ3HyVxCE15zAcwgANLbGzWMw2JCxuijaqGRB6CifcgudtCE7AlLALTX68JlhfR7wAwchA8rEmHkMN/GmKkF1cgOAAOYCIR0tLdYSmMJCAXVzA6AFHJxJsgyOS5ICFhvcgDA7J1DjTjVDwAdAaqafZcJ1ccVmUpOS6qkt9u6SrMDZG2MU/ljfIoFgN7+SRJ9BeDyx3JX604AMKnL6g+S6CuAqcmwAD99nHZU/gABjcv6le8BBENMtLOnJgLKm08h4FcA0EP/yed3qymgdNbI+NcAfIufG2BJVfAQbZzOgqOJ/gPAEpKU4Ew7kcFa1w164iGTJd+1vl8CfASce8ivSq+G2Th4iBMWOi65Lk1da8w+hUDXubHNId4njIV2YDH3qonGfGu+PH93/foLtjkVlkq4+u2AfnZlLSLW/Ny3kv5qmpTAycRjuLJt2CP/xY+XAnxmkTPbOYTYMjbUZWGYoP4APpeDa8v12IrOAMb61bAohNgH/R4OH/QnV68HZvtTCKplizdUCC6OH0dO5DC6fk0m2vi0BOhggFGooPs94RgCx1BuhrYFO0Zi7iFcL2Bi/rbtdM/K4RBnZWdqvICgQdeLPd18ziSZQfKsknT01js6ahVlArg+kTXo7mSUR8jNcJVsI89JAllqJxmbXwjzci5t9bO5FxjGrkQ47+KoKCNgW2a4C2KBcpNu1cMk2E60jPuDiO1nM/9lWiUD95lwQGcniedGjpN9h+M/7gqG+cviFLRjlq5WGGnXDvLYozE4NV4uTZ8QT8wwGDyMXtiUuLlsAl0SigSyU0m8yOVCLC8XAEw07kdeKlGq3BW/n4pVpn0yP5P7v1huB5hNj85FO1346fa20p2JezFuoKfbe7VDsRUv/xvQHw73hM6wB79xZyvDFmproR5lmN6aHt7uDIfxZYDe7pvucDQ9MU48GKWA3binw9QGZajEw9lFgFk3fTEe9ru9k2cjHOKoJtTtXdOqpc+m6d8FgL41HXExJKszPZ4CQISrngC09oD0nbg1Sz/5N6AFWiiFBg4axC5+rPRGKL2eMGALGB0AHRxDK8ZSe2bx3wEjAHD8fwBGoSOG2AepteJU5zQ+BYwUkWkWh56Yj+J/p+kIA2CmZwU1BHRTJ8ej/hFgN1Te7XEclQINEzUAPLsMIJaWHWCb37EY6w4QC6lNp2jwtAaLHQhPHfY9oHs0BkUo20VOEY9ivOx3U6kpXDzg20yAz/v3YncH3AF3wM8BfwBzeYSMPJUqfQAAAABJRU5ErkJggg==" alt="Mrida Logo">
+        </div>
+        <div class="loader-title">MRIDA ENERGY SOLUTIONS</div>
+        <div class="loader-subtitle">Connecting to Smart Meter...</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar-fill"></div>
+        </div>
+    </div>
+
+    <!-- Mobile Top Navigation Header -->
+    <div class="mobile-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img width="30" height="30" style="object-fit:contain;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAA/1BMVEUbV2MTkJtmnhocZ5sNn9tVXFdb0WyZ2CYW0fMipmksVx8ZMh+c4Vhb1I8FccxLaRlXolVfnpla2O8cy6CIiIjS8TltySaZ6Yvb+E/n5+fN9Jg1xmeOrC0JHlM0mDEAM45Ap8EAAAARFhMBOI0BKG8GGCoDqKwENHQNJjGoqKgBGUyXl5fHx8c0NjQGV68KtqgGKE94eHj4+PfV1dQFQ5MHdowIuO4vx463t7coJygKaIwDmrMLOUsCSaMSuZlpxiwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVTTVyAAAAQHRSTlP/////////////////////////////////////////////////////////////////////////////////////73leyQAABbJJREFUeNrtmWlzokwQgIcZkMtEjVfMsfsygCAqgmK89f//q+0evLPJGsGq94NdFau4+pk+pqdnQqwbC7kD7oD/AcA3iOLzmwH65WbloSKFhN8GQJ6fXx5eKvIj+4qQDbCs1J9fXpqy/BgmXxAyAVxWBP0vTxoA7ITkDyChUi9KkowWeN7fTcgEmIe2AgBJegSArRh5AzhLbJuUy4yxle3ZpJQ3wGW259ng/GKxTJzf5AYWOCCeQ94opSQKzBwAp3EkTgDiEIriBn5mQKlYbCpH15GHAM8p0RI13qPMWWQ0i83myzHBiVwzcAKX0pIfRJnnQfmh8NBsNvsHi8pgQhQEPqXRF/p/CAApNMu7a/OZWhjkd0I9J8qh2BEBKOwApXod8iZKwhUjdpRHueaT6mTyWtDTK/pcV9MFIVr6OS04plQFEfPJVJ/r9VLuKxonuo5fmG+gXlX5jZbMfrlYLIL+0k3WZE5QfbGoqvQWi75PMI9Qf4Py/AEY5AkAgLBpmLm3LUSSB4P1ZIKATcPIuy8C9e12ezCYCBM21MoXYMLCu1ggIDVhY+QEqCxF5kgaqEeAMCFHQEWT8B1NWyz2gDX6aGPmAlCeNM3lFW3Qbi8W0hhkkfqoseF5APpP2seH9FAdDNrQmozn8/F83BaAy2P8LQD1PxTB4zpUoKXPORnPJTQhJ0DlCfRDydmUjZ3HyVxCE15zAcwgANLbGzWMw2JCxuijaqGRB6CifcgudtCE7AlLALTX68JlhfR7wAwchA8rEmHkMN/GmKkF1cgOAAOYCIR0tLdYSmMJCAXVzA6AFHJxJsgyOS5ICFhvcgDA7J1DjTjVDwAdAaqafZcJ1ccVmUpOS6qkt9u6SrMDZG2MU/ljfIoFgN7+SRJ9BeDyx3JX604AMKnL6g+S6CuAqcmwAD99nHZU/gABjcv6le8BBENMtLOnJgLKm08h4FcA0EP/yed3qymgdNbI+NcAfIufG2BJVfAQbZzOgqOJ/gPAEpKU4Ew7kcFa1w164iGTJd+1vl8CfASce8ivSq+G2Th4iBMWOi65Lk1da8w+hUDXubHNId4njIV2YDH3qonGfGu+PH93/foLtjkVlkq4+u2AfnZlLSLW/Ny3kv5qmpTAycRjuLJt2CP/xY+XAnxmkTPbOYTYMjbUZWGYoP4APpeDa8v12IrOAMb61bAohNgH/R4OH/QnV68HZvtTCKplizdUCC6OH0dO5DC6fk0m2vi0BOhggFGooPs94RgCx1BuhrYFO0Zi7iFcL2Bi/rbtdM/K4RBnZWdqvICgQdeLPd18ziSZQfKsknT01js6ahVlArg+kTXo7mSUR8jNcJVsI89JAllqJxmbXwjzci5t9bO5FxjGrkQ47+KoKCNgW2a4C2KBcpNu1cMk2E60jPuDiO1nM/9lWiUD95lwQGcniedGjpN9h+M/7gqG+cviFLRjlq5WGGnXDvLYozE4NV4uTZ8QT8wwGDyMXtiUuLlsAl0SigSyU0m8yOVCLC8XAEw07kdeKlGq3BW/n4pVpn0yP5P7v1huB5hNj85FO1346fa20p2JezFuoKfbe7VDsRUv/xvQHw73hM6wB79xZyvDFmproR5lmN6aHt7uDIfxZYDe7pvucDQ9MU48GKWA3binw9QGZajEw9lFgFk3fTEe9ru9k2cjHOKoJtTtXdOqpc+m6d8FgL41HXExJKszPZ4CQISrngC09oD0nbg1Sz/5N6AFWiiFBg4axC5+rPRGKL2eMGALGB0AHRxDK8ZSe2bx3wEjAHD8fwBGoSOG2AepteJU5zQ+BYwUkWkWh56Yj+J/p+kIA2CmZwU1BHRTJ8ej/hFgN1Te7XEclQINEzUAPLsMIJaWHWCb37EY6w4QC6lNp2jwtAaLHQhPHfY9oHs0BkUo20VOEY9ivOx3U6kpXDzg20yAz/v3YncH3AF3wM8BfwBzeYSMPJUqfQAAAABJRU5ErkJggg==" alt="Mrida Logo">
+            <strong style="font-size:15px; letter-spacing:0.2px;">MRIDA ENERGY SOLUTIONS</strong>
+        </div>
+        <button class="menu-toggle-btn" onclick="toggleMobileNav()">☰</button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <!-- Mrida Energy Solutions Brand Logo -->
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAA/1BMVEUbV2MTkJtmnhocZ5sNn9tVXFdb0WyZ2CYW0fMipmksVx8ZMh+c4Vhb1I8FccxLaRlXolVfnpla2O8cy6CIiIjS8TltySaZ6Yvb+E/n5+fN9Jg1xmeOrC0JHlM0mDEAM45Ap8EAAAARFhMBOI0BKG8GGCoDqKwENHQNJjGoqKgBGUyXl5fHx8c0NjQGV68KtqgGKE94eHj4+PfV1dQFQ5MHdowIuO4vx463t7coJygKaIwDmrMLOUsCSaMSuZlpxiwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVTTVyAAAAQHRSTlP/////////////////////////////////////////////////////////////////////////////////////73leyQAABbJJREFUeNrtmWlzokwQgIcZkMtEjVfMsfsygCAqgmK89f//q+0evLPJGsGq94NdFau4+pk+pqdnQqwbC7kD7oD/AcA3iOLzmwH65WbloSKFhN8GQJ6fXx5eKvIj+4qQDbCs1J9fXpqy/BgmXxAyAVxWBP0vTxoA7ITkDyChUi9KkowWeN7fTcgEmIe2AgBJegSArRh5AzhLbJuUy4yxle3ZpJQ3wGW259ng/GKxTJzf5AYWOCCeQ94opSQKzBwAp3EkTgDiEIriBn5mQKlYbCpH15GHAM8p0RI13qPMWWQ0i83myzHBiVwzcAKX0pIfRJnnQfmh8NBsNvsHi8pgQhQEPqXRF/p/CAApNMu7a/OZWhjkd0I9J8qh2BEBKOwApXod8iZKwhUjdpRHueaT6mTyWtDTK/pcV9MFIVr6OS04plQFEfPJVJ/r9VLuKxonuo5fmG+gXlX5jZbMfrlYLIL+0k3WZE5QfbGoqvQWi75PMI9Qf4Py/AEY5AkAgLBpmLm3LUSSB4P1ZIKATcPIuy8C9e12ezCYCBM21MoXYMLCu1ggIDVhY+QEqCxF5kgaqEeAMCFHQEWT8B1NWyz2gDX6aGPmAlCeNM3lFW3Qbi8W0hhkkfqoseF5APpP2seH9FAdDNrQmozn8/F83BaAy2P8LQD1PxTB4zpUoKXPORnPJTQhJ0DlCfRDydmUjZ3HyVxCE15zAcwgANLbGzWMw2JCxuijaqGRB6CifcgudtCE7AlLALTX68JlhfR7wAwchA8rEmHkMN/GmKkF1cgOAAOYCIR0tLdYSmMJCAXVzA6AFHJxJsgyOS5ICFhvcgDA7J1DjTjVDwAdAaqafZcJ1ccVmUpOS6qkt9u6SrMDZG2MU/ljfIoFgN7+SRJ9BeDyx3JX604AMKnL6g+S6CuAqcmwAD99nHZU/gABjcv6le8BBENMtLOnJgLKm08h4FcA0EP/yed3qymgdNbI+NcAfIufG2BJVfAQbZzOgqOJ/gPAEpKU4Ew7kcFa1w164iGTJd+1vl8CfASce8ivSq+G2Th4iBMWOi65Lk1da8w+hUDXubHNId4njIV2YDH3qonGfGu+PH93/foLtjkVlkq4+u2AfnZlLSLW/Ny3kv5qmpTAycRjuLJt2CP/xY+XAnxmkTPbOYTYMjbUZWGYoP4APpeDa8v12IrOAMb61bAohNgH/R4OH/QnV68HZvtTCKplizdUCC6OH0dO5DC6fk0m2vi0BOhggFGooPs94RgCx1BuhrYFO0Zi7iFcL2Bi/rbtdM/K4RBnZWdqvICgQdeLPd18ziSZQfKsknT01js6ahVlArg+kTXo7mSUR8jNcJVsI89JAllqJxmbXwjzci5t9bO5FxjGrkQ47+KoKCNgW2a4C2KBcpNu1cMk2E60jPuDiO1nM/9lWiUD95lwQGcniedGjpN9h+M/7gqG+cviFLRjlq5WGGnXDvLYozE4NV4uTZ8QT8wwGDyMXtiUuLlsAl0SigSyU0m8yOVCLC8XAEw07kdeKlGq3BW/n4pVpn0yP5P7v1huB5hNj85FO1346fa20p2JezFuoKfbe7VDsRUv/xvQHw73hM6wB79xZyvDFmproR5lmN6aHt7uDIfxZYDe7pvucDQ9MU48GKWA3binw9QGZajEw9lFgFk3fTEe9ru9k2cjHOKoJtTtXdOqpc+m6d8FgL41HXExJKszPZ4CQISrngC09oD0nbg1Sz/5N6AFWiiFBg4axC5+rPRGKL2eMGALGB0AHRxDK8ZSe2bx3wEjAHD8fwBGoSOG2AepteJU5zQ+BYwUkWkWh56Yj+J/p+kIA2CmZwU1BHRTJ8ej/hFgN1Te7XEclQINEzUAPLsMIJaWHWCb37EY6w4QC6lNp2jwtAaLHQhPHfY9oHs0BkUo20VOEY9ivOx3U6kpXDzg20yAz/v3YncH3AF3wM8BfwBzeYSMPJUqfQAAAABJRU5ErkJggg==" alt="Mrida Logo" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">MRIDA ENERGY SOLUTIONS</span>
+                    <span class="brand-tagline">Smart Prepaid Infrastructure</span>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showPage('dashboard')">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('account')">
+                        <span class="nav-icon">💳</span>
+                        <span>Account & Top-up</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('control')">
+                        <span class="nav-icon">⚡</span>
+                        <span>Relay Control</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('settings')">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Safety Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('help')">
+                        <span class="nav-icon">📖</span>
+                        <span>OLED & Guide</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-badge">
+                    <span class="dot"></span>
+                    <span>PZEM-004T v3.0</span>
+                </div>
+                <div style="margin-top:4px;">ESP32 Firmware v2.6</div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- 1. Dashboard Section -->
+            <section id="dashboard-section" class="page-section active">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Live Energy Dashboard</h1>
+                        <p class="page-subtitle">Real-time smart meter telemetry and circuit control</p>
+                    </div>
+                    <div class="header-meta">
+                        <div class="live-status-pill">
+                            <div class="pulse-beacon" id="connection-beacon">
+                                <div class="ring"></div>
+                                <div class="core"></div>
+                            </div>
+                            <span id="update-status-text">Connected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Metrics Cards -->
+                <div class="card-grid">
+                    <!-- Balance (Featured Hero Card) -->
+                    <div class="card card-featured">
+                        <div class="card-header">
+                            <span class="card-title">Available Balance</span>
+                            <div class="card-icon">₹</div>
+                        </div>
+                        <div class="dashboard-value" id="balance">--<span class="unit">₹</span></div>
+                        <div class="trend">Prepaid Account Balance</div>
+                    </div>
+
+                    <!-- Voltage -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">AC Line Voltage</span>
+                            <div class="card-icon">V</div>
+                        </div>
+                        <div class="dashboard-value" id="voltage">--<span class="unit">V</span></div>
+                        <div class="trend">Grid Voltage (RMS)</div>
+                    </div>
+
+                    <!-- Current -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Load Current</span>
+                            <div class="card-icon">A</div>
+                        </div>
+                        <div class="dashboard-value" id="current">--<span class="unit">A</span></div>
+                        <div class="trend">Instantaneous Draw</div>
+                    </div>
+
+                    <!-- Active Power -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Active Power</span>
+                            <div class="card-icon">W</div>
+                        </div>
+                        <div class="dashboard-value" id="power">--<span class="unit">W</span></div>
+                        <div class="trend">Real-time Consumption</div>
+                    </div>
+                </div>
+
+                <!-- Status and Quick Actions Grid -->
+                <div class="card-grid">
+                    <!-- System Protection Status -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">System Status & Protection</span>
+                        </div>
+                        <div class="status-indicators">
+                            <div class="status-item">
+                                <div class="status-indicator" id="power-indicator"></div>
+                                <div class="status-label">Power Load Relay</div>
+                                <div class="status-value tag-on" id="power-status">--</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator" id="fault-indicator"></div>
+                                <div class="status-label">Overload / Fault Tripped</div>
+                                <div class="status-value tag-normal" id="fault-status">--</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator" id="theft-indicator"></div>
+                                <div class="status-label">Anti-Theft Current Alarm</div>
+                                <div class="status-value tag-normal" id="theft-status">--</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator status-active"></div>
+                                <div class="status-label">Total Energy Metered</div>
+                                <div class="status-value" id="energy-value">-- kWh</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Relay & Recharge -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Quick Actions</span>
+                        </div>
+                        <div class="action-content">
+                            <div id="quick-action-alert" style="display:none;" class="alert"></div>
+
+                            <p style="margin-bottom:10px; font-size:13px; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Relay Circuit Switch</p>
+                            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                                <button id="btn-quick-on" class="btn btn-success" onclick="setRelay(1, this)" style="flex:1;">
+                                    <span>Power ON</span>
+                                </button>
+                                <button id="btn-quick-off" class="btn btn-danger" onclick="setRelay(0, this)" style="flex:1;">
+                                    <span>Power OFF</span>
+                                </button>
+                            </div>
+
+                            <p style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Quick Top-Up</p>
+                            <div class="recharge-presets">
+                                <span class="preset-chip" onclick="setRechargePreset('quick-recharge-amount', 100)">+₹100</span>
+                                <span class="preset-chip" onclick="setRechargePreset('quick-recharge-amount', 200)">+₹200</span>
+                                <span class="preset-chip" onclick="setRechargePreset('quick-recharge-amount', 500)">+₹500</span>
+                                <span class="preset-chip" onclick="setRechargePreset('quick-recharge-amount', 1000)">+₹1000</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="quick-recharge-amount" class="form-input" value="100" min="10" step="10">
+                                <div class="input-append">₹</div>
+                            </div>
+                            <button id="btn-quick-recharge" class="btn btn-primary btn-block" onclick="quickRecharge(this)">
+                                <span>Recharge Balance</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Account & Top-up Section -->
+            <section id="account-section" class="page-section">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Account & Billing</h1>
+                        <p class="page-subtitle">Recharge prepaid balance and view tariff rate structure</p>
+                    </div>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card card-featured">
+                        <div class="card-header">
+                            <span class="card-title">Available Credit</span>
+                            <div class="card-icon">₹</div>
+                        </div>
+                        <div class="dashboard-value" id="account-balance">--<span class="unit">₹</span></div>
+                        <div class="trend">Current Account Balance</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Active Tariff Rate</span>
+                            <div class="card-icon">⚡</div>
+                        </div>
+                        <div class="dashboard-value" id="tariff-rate">--<span class="unit">₹/kWh</span></div>
+                        <div class="trend">Unit Cost Per Kilowatt-hour</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Recharge Prepaid Account</span>
+                    </div>
+                    <div id="recharge-alert" style="display:none;" class="alert"></div>
+
+                    <div style="max-width: 500px;">
+                        <div class="form-group">
+                            <label class="form-label">Select Quick Amount</label>
+                            <div class="recharge-presets">
+                                <span class="preset-chip" onclick="setRechargePreset('recharge-amount', 100)">+₹100</span>
+                                <span class="preset-chip" onclick="setRechargePreset('recharge-amount', 250)">+₹250</span>
+                                <span class="preset-chip" onclick="setRechargePreset('recharge-amount', 500)">+₹500</span>
+                                <span class="preset-chip" onclick="setRechargePreset('recharge-amount', 1000)">+₹1000</span>
+                                <span class="preset-chip" onclick="setRechargePreset('recharge-amount', 2000)">+₹2000</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recharge-amount" class="form-label">Custom Recharge Amount</label>
+                            <div class="input-group">
+                                <input type="number" id="recharge-amount" class="form-input" value="500" min="10" step="10">
+                                <div class="input-append">₹</div>
+                            </div>
+                        </div>
+
+                        <button id="btn-recharge-submit" class="btn btn-primary" onclick="rechargeAccount(this)">
+                            <span>Confirm & Add Balance</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Control Section -->
+            <section id="control-section" class="page-section">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Relay Load Control</h1>
+                        <p class="page-subtitle">Manual circuit isolation and emergency disconnect control</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Circuit Breaker & Relay State</span>
+                    </div>
+                    <div id="relay-control-alert" style="display:none;" class="alert"></div>
+                    <p style="margin:16px 0; font-size:15px;">
+                        Current Power Line Status: <strong id="relay-control-status" style="color:var(--brand-green); font-size:16px;">Loading...</strong>
+                    </p>
+                    <div style="display:flex; gap:16px; max-width: 440px; margin-top: 10px;">
+                        <button id="btn-ctrl-power-on" class="btn btn-success" onclick="setRelay(1, this)" style="flex:1;">
+                            <span>Turn ON Load</span>
+                        </button>
+                        <button id="btn-ctrl-power-off" class="btn btn-danger" onclick="setRelay(0, this)" style="flex:1;">
+                            <span>Turn OFF Load</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Settings Section -->
+            <section id="settings-section" class="page-section">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Safety Thresholds & Tariffs</h1>
+                        <p class="page-subtitle">Configure EEPROM persistent limits and electrical protection triggers</p>
+                    </div>
+                </div>
+
+                <div id="threshold-alert" style="display:none;" class="alert"></div>
+
+                <form id="threshold-form">
+                    <div class="card settings-section">
+                        <div class="settings-header">
+                            <span class="settings-icon">⚡</span>
+                            <h3 class="settings-title">Voltage & Current Protection Limits</h3>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="overVoltage" class="form-label">Over-Voltage Trip Cutoff (V)</label>
+                                <div class="input-group">
+                                    <input type="number" id="overVoltage" class="form-input" value="260" step="1">
+                                    <div class="input-append">V</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="overCurrent" class="form-label">Over-Current Trip Cutoff (A)</label>
+                                <div class="input-group">
+                                    <input type="number" id="overCurrent" class="form-input" value="10.0" step="0.1">
+                                    <div class="input-append">A</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card settings-section">
+                        <div class="settings-header">
+                            <span class="settings-icon">🛡️</span>
+                            <h3 class="settings-title">Anti-Theft Detection & Billing Rate</h3>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="theftCurrent" class="form-label">Theft Current Alarm Trigger (A)</label>
+                                <div class="input-group">
+                                    <input type="number" id="theftCurrent" class="form-input" value="0.020" step="0.005">
+                                    <div class="input-append">A</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="minBalance" class="form-label">Minimum Balance Cutoff (₹)</label>
+                                <div class="input-group">
+                                    <input type="number" id="minBalance" class="form-input" value="0.00" step="1">
+                                    <div class="input-append">₹</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="costPerKWh" class="form-label">Unit Tariff Rate (₹/kWh)</label>
+                                <div class="input-group">
+                                    <input type="number" id="costPerKWh" class="form-input" value="0.20" step="0.01">
+                                    <div class="input-append">₹</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="btn-save-settings" class="btn btn-primary" onclick="setThresholds(this)">
+                        <span>Save Safety Settings to EEPROM</span>
+                    </button>
+                </form>
+
+                <!-- Factory Reset Block -->
+                <div class="card settings-section" style="margin-top:28px; border-left: 4px solid var(--danger);">
+                    <div class="settings-header">
+                        <span class="settings-icon">⚠️</span>
+                        <h3 class="settings-title" style="color:var(--danger);">Factory Reset EEPROM</h3>
+                    </div>
+                    <p style="margin-bottom:16px; color:var(--text-muted);">
+                        Permanently reset accumulated energy consumption, balance, and reload default safety thresholds into ESP32 EEPROM.
+                    </p>
+                    <button id="btn-factory-reset" class="btn btn-danger" onclick="factoryReset(this)">
+                        <span>Reset Meter to Defaults</span>
+                    </button>
+                    <div id="factory-reset-alert" style="display:none; margin-top:16px;" class="alert"></div>
+                </div>
+            </section>
+
+            <!-- 5. Help & Guide Section -->
+            <section id="help-section" class="page-section">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Hardware Guide & OLED Screen</h1>
+                        <p class="page-subtitle">Instructions for on-device button and display navigation</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">SSD1306 OLED Display Operations</span>
+                    </div>
+                    <ul style="padding-left: 20px; line-height: 2; color:var(--text-main);">
+                        <li><strong>Short Press (< 2s) [GPIO 32]:</strong> Cycles between Screen 1 (Live Measurements & Balance) and Screen 2 (Safety Limits & Anti-Theft Status).</li>
+                        <li><strong>Long Press (> 2s) [GPIO 32]:</strong> Toggles manual override on the power load relay directly from the physical hardware.</li>
+                        <li><strong>Auto-Disconnect Protection:</strong> Circuit cuts off instantly when balance reaches ₹0.00 or if line voltage/current exceeds configured safety thresholds.</li>
+                        <li><strong>Anti-Theft Detection:</strong> If PZEM detects current flow while the relay is in OFF state, a theft warning is displayed and logged.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Dashboard Footer -->
+            <footer class="dashboard-footer">
+                <div>
+                    <span class="footer-brand">MRIDA ENERGY SOLUTIONS</span> &bull; Smart IoT Prepaid Energy Infrastructure
+                </div>
+                <div id="update-timestamp" style="font-weight: 500;">Last updated: --:--:--</div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Dashboard Logic Script -->
+    <script>
+        let isInitialLoad = true;
+
+        // Instant Preloader Failsafe Dismiss
+        function dismissPreloader() {
+            const preloader = document.getElementById('app-preloader');
+            if (preloader) {
+                preloader.classList.add('fade-out');
+                setTimeout(() => { if (preloader) preloader.remove(); }, 300);
+            }
+        }
+        window.addEventListener('load', () => setTimeout(dismissPreloader, 400));
+        setTimeout(dismissPreloader, 1200); // Safety fallback
+
+
+        function toggleMobileNav() {
+            const sidebar = document.getElementById('app-sidebar');
+            if (sidebar) sidebar.classList.toggle('mobile-open');
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            const targetSection = document.getElementById(page + '-section');
+            if (targetSection) targetSection.classList.add('active');
+
+            const activeLink = document.querySelector(`.nav-link[onclick="showPage('${page}')"]`);
+            if (activeLink) activeLink.classList.add('active');
+
+            // Close mobile menu on page selection
+            const sidebar = document.getElementById('app-sidebar');
+            if (sidebar && sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        }
+
+        function setRechargePreset(inputId, amount) {
+            const input = document.getElementById(inputId);
+            if (input) input.value = amount;
+        }
+
+        function showAlert(message, type, alertId) {
+            const el = document.getElementById(alertId);
+            if (!el) return;
+            el.className = `alert alert-${type}`;
+            el.innerHTML = `<span>${message}</span>`;
+            el.style.display = 'flex';
+            setTimeout(() => { el.style.display = 'none'; }, 6000);
+        }
+
+        function setButtonLoading(btn, isLoading, originalText = '') {
+            if (!btn) return;
+            if (isLoading) {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<span class="btn-spinner"></span> <span>Processing...</span>`;
+            } else {
+                btn.disabled = false;
+                if (btn.dataset.originalHtml) {
+                    btn.innerHTML = btn.dataset.originalHtml;
+                }
+            }
+        }
+
+        function updateValues() {
+            fetch('/data')
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    // Update Hero Balance
+                    document.getElementById('balance').innerHTML = data.balance.toFixed(2) + '<span class="unit">₹</span>';
+                    document.getElementById('account-balance').innerHTML = data.balance.toFixed(2) + '<span class="unit">₹</span>';
+                    document.getElementById('tariff-rate').innerHTML = data.costPerKWh.toFixed(2) + '<span class="unit">₹/kWh</span>';
+                    
+                    // Update Electrical Metrics
+                    document.getElementById('voltage').innerHTML = data.voltage.toFixed(1) + '<span class="unit">V</span>';
+                    document.getElementById('current').innerHTML = data.current.toFixed(3) + '<span class="unit">A</span>';
+                    document.getElementById('power').innerHTML = data.power.toFixed(1) + '<span class="unit">W</span>';
+                    document.getElementById('energy-value').textContent = data.energy.toFixed(3) + ' kWh';
+
+                    // Update Status Indicators
+                    const powerInd = document.getElementById('power-indicator');
+                    const powerStat = document.getElementById('power-status');
+                    powerInd.className = 'status-indicator ' + (data.relayState ? 'status-active' : 'status-inactive');
+                    powerStat.className = 'status-value ' + (data.relayState ? 'tag-on' : 'tag-off');
+                    powerStat.textContent = data.relayState ? 'ON (CLOSED)' : 'OFF (OPEN)';
+
+                    const faultInd = document.getElementById('fault-indicator');
+                    const faultStat = document.getElementById('fault-status');
+                    faultInd.className = 'status-indicator ' + (data.faultDetected ? 'status-danger' : 'status-active');
+                    faultStat.className = 'status-value ' + (data.faultDetected ? 'tag-alert' : 'tag-normal');
+                    faultStat.textContent = data.faultDetected ? 'TRIPPED' : 'NORMAL';
+
+                    const theftInd = document.getElementById('theft-indicator');
+                    const theftStat = document.getElementById('theft-status');
+                    theftInd.className = 'status-indicator ' + (data.theftDetected ? 'status-warning' : 'status-active');
+                    theftStat.className = 'status-value ' + (data.theftDetected ? 'tag-alert' : 'tag-normal');
+                    theftStat.textContent = data.theftDetected ? 'DETECTED' : 'NORMAL';
+
+                    // Relay Control Page text
+                    const relayStatusLabel = document.getElementById('relay-control-status');
+                    if (relayStatusLabel) {
+                        relayStatusLabel.textContent = data.relayState ? 'ACTIVE (LOAD CONNECTED)' : 'ISOLATED (LOAD DISCONNECTED)';
+                        relayStatusLabel.style.color = data.relayState ? 'var(--brand-green)' : 'var(--danger)';
+                    }
+
+                    // Connection Pulse Beacon
+                    const beacon = document.getElementById('connection-beacon');
+                    if (beacon) beacon.classList.remove('offline');
+                    document.getElementById('update-status-text').textContent = 'Live System';
+
+                    const now = new Date();
+                    document.getElementById('update-timestamp').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+
+                    // Hide preloader on first successful response
+                    if (isInitialLoad) {
+                        isInitialLoad = false;
+                        const preloader = document.getElementById('app-preloader');
+                        if (preloader) {
+                            preloader.classList.add('fade-out');
+                            setTimeout(() => { preloader.remove(); }, 600);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch telemetry error:', err);
+                    const beacon = document.getElementById('connection-beacon');
+                    if (beacon) beacon.classList.add('offline');
+                    document.getElementById('update-status-text').textContent = 'Disconnected';
+                    
+                    // In case initial load fails, still reveal UI
+                    if (isInitialLoad) {
+                        isInitialLoad = false;
+                        const preloader = document.getElementById('app-preloader');
+                        if (preloader) {
+                            preloader.classList.add('fade-out');
+                            setTimeout(() => { preloader.remove(); }, 600);
+                        }
+                    }
+                });
+        }
+
+        function setRelay(state, btnElement) {
+            setButtonLoading(btnElement, true);
+            const override = (state === 0) ? 1 : 0;
+            fetch(`/setRelay?state=${state}&override=${override}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    setButtonLoading(btnElement, false);
+                    if (data.success) {
+                        showAlert(`Power relay turned ${state === 1 ? 'ON' : 'OFF'} successfully.`, 'success', 'quick-action-alert');
+                        showAlert(`Power relay turned ${state === 1 ? 'ON' : 'OFF'} successfully.`, 'success', 'relay-control-alert');
+                        updateValues();
+                    } else {
+                        showAlert('Failed: ' + (data.message || 'Operation error'), 'danger', 'quick-action-alert');
+                        showAlert('Failed: ' + (data.message || 'Operation error'), 'danger', 'relay-control-alert');
+                    }
+                })
+                .catch(err => {
+                    setButtonLoading(btnElement, false);
+                    showAlert('Network error controlling relay.', 'danger', 'quick-action-alert');
+                    showAlert('Network error controlling relay.', 'danger', 'relay-control-alert');
+                });
+        }
+
+        function quickRecharge(btn) {
+            const amount = document.getElementById('quick-recharge-amount').value;
+            processRecharge(amount, 'quick-action-alert', btn);
+        }
+
+        function rechargeAccount(btn) {
+            const amount = document.getElementById('recharge-amount').value;
+            processRecharge(amount, 'recharge-alert', btn);
+        }
+
+        function processRecharge(amount, alertId, btnElement) {
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('Please enter a valid positive recharge amount.', 'warning', alertId);
+                return;
+            }
+            setButtonLoading(btnElement, true);
+            fetch(`/recharge?amount=${amount}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    setButtonLoading(btnElement, false);
+                    if (data.success) {
+                        showAlert(`Recharge successful! Added ₹${parseFloat(amount).toFixed(2)}. New Balance: ₹${data.balance.toFixed(2)}`, 'success', alertId);
+                        updateValues();
+                    } else {
+                        showAlert('Recharge failed: ' + (data.message || 'Error'), 'danger', alertId);
+                    }
+                })
+                .catch(err => {
+                    setButtonLoading(btnElement, false);
+                    showAlert('Network error during recharge.', 'danger', alertId);
+                });
+        }
+
+        function setThresholds(btnElement) {
+            const ov = document.getElementById('overVoltage').value;
+            const oc = document.getElementById('overCurrent').value;
+            const tc = document.getElementById('theftCurrent').value;
+            const mb = document.getElementById('minBalance').value;
+            const cost = document.getElementById('costPerKWh').value;
+
+            setButtonLoading(btnElement, true);
+            const url = `/setThresholds?overVoltage=${ov}&overCurrent=${oc}&theftCurrent=${tc}&minBalance=${mb}&costPerKWh=${cost}`;
+
+            fetch(url, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    setButtonLoading(btnElement, false);
+                    if (data.success) {
+                        showAlert('Safety thresholds and pricing settings saved to EEPROM!', 'success', 'threshold-alert');
+                        updateValues();
+                    } else {
+                        showAlert('Failed saving settings.', 'danger', 'threshold-alert');
+                    }
+                })
+                .catch(err => {
+                    setButtonLoading(btnElement, false);
+                    showAlert('Network error saving settings.', 'danger', 'threshold-alert');
+                });
+        }
+
+        function factoryReset(btnElement) {
+            if (!confirm('Are you sure you want to reset all MRIDA ENERGY SOLUTIONS meter settings & balance to defaults?')) return;
+            setButtonLoading(btnElement, true);
+            fetch('/factoryReset', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    setButtonLoading(btnElement, false);
+                    if (data.success) {
+                        showAlert('Factory reset complete. EEPROM restored to default thresholds & ₹0 balance.', 'success', 'factory-reset-alert');
+                        updateValues();
+                    } else {
+                        showAlert('Factory reset failed.', 'danger', 'factory-reset-alert');
+                    }
+                })
+                .catch(err => {
+                    setButtonLoading(btnElement, false);
+                    showAlert('Network error during reset.', 'danger', 'factory-reset-alert');
+                });
+        }
+
+        // Initialize polling loop
+        setInterval(updateValues, 1000);
+        window.onload = updateValues;
+    </script>
+</body>
+</html>
+
+)rawliteral";
+
+#endif // WEB_DASHBOARD_H
